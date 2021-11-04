@@ -130,19 +130,22 @@ function checkForUpdate(id){
     var test = fetchJSON(url).then((json) => {
         if (json) {
             updateWorldWith(json);
-            drawNextFrame();
+            if (Object.keys(json).length != 0){
+                //drawNextFrame();
+                //drawFrame();
+            }
+            
         }
     });
-    //console.log("World status is: "+world)
-    drawFrame();
+    //drawFrame();
 
 }
 
 function modifyWorld(name, value){
     var url = "http://" + host + "/entity/" +name;
     var test = fetchJSON(url, m="POST", b=value).then((json) => {
-        console.log("Printing POST json")
-        console.log(json)
+        //console.log("Printing POST json")
+        //console.log(json)
     });
 
 }
@@ -151,6 +154,7 @@ function updateWorldWith(objs){
     for (var key in objs){
         console.log(world[key] + "and" + objs[key])
         world[key] = objs[key]
+        drawCircle(context,prepEntity(objs[key]));        
     }
 }
 
@@ -235,9 +239,6 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    //drawNextFrame(); // (but should we?)
-    console.log("Adding entity")
-    console.log(parseJsonObject());
     modifyWorld(entity, data);
     //XXX: Send a XHTML Request that updates the entity you just  modified!
 
@@ -373,6 +374,10 @@ function update(id) {
 setInterval( function() {
     checkForUpdate(id);
 }, 1000/30);
+
+//setInterval( function() {
+//    checkForUpdate(id);
+//}, 3000);
 
 
 
