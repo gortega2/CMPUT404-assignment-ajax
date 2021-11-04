@@ -25,6 +25,9 @@
   <body bgcolor="black" height="100%" width="100%"> 
     <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
     <script>
+var id = "L"+Math.floor(20000000*Math.random()); //choose random listener id
+console.log("Id is: " + id);
+
 var canvas = document.getElementById('c');
 var host = window.location.host;
 var context = canvas.getContext("2d");
@@ -55,15 +58,6 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
 
 
 world = {};
-
-function test() {
-    var request = new Request(location.host);
-    var promise1 = fetch(request);
-    var promise2 = promise1.then(function(response) { 
-        console.log("GOt headers");
-        return response.blob();
-    });
-}
 /*
 function getJSONrequest(uri) {
     // init request
@@ -86,11 +80,17 @@ function getJSONrequest(uri) {
 }
 */
 
-function fetchJSON(uri){
-    var request = new Request(uri);
-    return fetch(request).then((response) =>{
+function fetchJSON(uri, m='GET', b=''){
+    if (m === "GET"){
+        var request = new Request(uri, {method:m,});
+    } else if (m ==='POST' || m === "PUT") {
+        var request = new Request(uri, {method:m, body:JSON.stringify(b)});
+    }
+    console.log(request.method);
+    return fetch(request).then((response) => {
         if (response.status === 200) {
             //console.log(response.json());
+            console.log(response);
             return response.json();
             
         } else {
@@ -101,10 +101,57 @@ function fetchJSON(uri){
 
 function parseJsonObject(){
     var url = "http://" + location.host + "/world"
-    fetchJSON(url).then((json) => {
+    var test = fetchJSON(url).then((json) => {
+        console.log("Printing json stuff:");
         console.log(json);
-        text = json.message;
+        console.log(json.P1);
+        //console.log(json);
+        //text = json.message;
+        //console.log(text);
+        
     });
+    console.log(test);
+}
+
+//Reference: AJAXObserverExample provided from cmput404 github slides
+function register(id){
+    var url = "http://" + location.host + "/listener/" + id;
+    var test = fetchJSON(url, m="POST").then((json) => {
+        console.log("Printing POST json")
+        console.log(json)
+    });
+}
+
+console.log("registering")
+register(id);
+
+function checkForUpdate(id){
+    var url = "http://" + location.host + "/listener/" + id;
+    var test = fetchJSON(url).then((json) => {
+        if (json) {
+            updateWorldWith(json);
+            drawNextFrame();
+        }
+    });
+    //console.log("World status is: "+world)
+    drawFrame();
+
+}
+
+function modifyWorld(name, value){
+    var url = "http://" + host + "/entity/" +name;
+    var test = fetchJSON(url, m="POST", b=value).then((json) => {
+        console.log("Printing POST json")
+        console.log(json)
+    });
+
+}
+
+function updateWorldWith(objs){
+    for (var key in objs){
+        console.log(world[key] + "and" + objs[key])
+        world[key] = objs[key]
+    }
 }
 
 //XXX: TODO Make this prettier!
@@ -188,9 +235,10 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    drawNextFrame(); // (but should we?)
+    //drawNextFrame(); // (but should we?)
     console.log("Adding entity")
-    parseJsonObject();
+    console.log(parseJsonObject());
+    modifyWorld(entity, data);
     //XXX: Send a XHTML Request that updates the entity you just  modified!
 
 
@@ -315,13 +363,16 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 });
 
 
-function update() {
+function update(id) {
+    var int = id
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
     drawFrame();
 }
 
 // 30 frames per second
-setInterval( update, 1000/30.0);
+setInterval( function() {
+    checkForUpdate(id);
+}, 1000/30);
 
 
 

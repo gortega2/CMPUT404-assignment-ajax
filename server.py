@@ -93,29 +93,20 @@ def hello():
     return send_from_directory('static', 'index.html')
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
-def update(entity):
-    '''update the entities via this interface'''
+def add_entity(entity):
+    v = flask_post_json()
+    print("Printing v: ", v)
     print("Printing entity: ", entity)
-    value = flask_post_json()
-    print(value)
-    print(request.method)
-    key = request.url.split("/")[-1]
-    print("Printing key: ", key)
-    if request.method == "PUT":
-        for k, v in value.items():
-            print("Key is {} and value is {}".format(k,v))
-            myWorld.update(entity, k, v)
-        print("Returning entity: ", myWorld.get(entity))
-        return flask.jsonify(myWorld.get(entity))
-    elif request.method == "POST":
-        return flask.jsonify(myWorld.world())
-    else:
-        return "BAD_REQUEST", 400
-    return flask.jsonify(myWorld.world())
+    myWorld.set( entity, v )
+    e = myWorld.get(entity)    
+    # flask has a security restriction in jsonify
+    return json.dumps( e ) # flask.jsonify( e )
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
+    print(flask.jsonify(myWorld.world()))
+    #myWorld.update('P1', 'x', 0)
     return flask.jsonify(myWorld.world())
 @app.route("/entity/<entity>")    
 def get_entity(entity):
@@ -127,6 +118,17 @@ def clear():
     '''Clear the world out!'''
     myWorld.clear()
     return myWorld.world()
+
+@app.route("/listener/<entity>", methods=['POST','PUT'])
+def add_listener(entity):
+    myWorld.add_listener( entity )
+    return flask.jsonify(dict())
+
+@app.route("/listener/<entity>")    
+def get_listener(entity):
+    v = myWorld.get_listener(entity)
+    myWorld.clear_listener(entity)
+    return flask.jsonify( v )
 
 if __name__ == "__main__":
     app.run()
