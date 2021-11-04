@@ -22,7 +22,7 @@
 
 
 import flask
-from flask import Flask, request
+from flask import Flask, request, render_template, send_from_directory
 import json
 app = Flask(__name__)
 app.debug = True
@@ -44,15 +44,31 @@ class World:
 
     def set(self, entity, data):
         self.space[entity] = data
+        self.notify_all(entity, data)
 
     def clear(self):
         self.space = dict()
+        self.listeners = dict()
 
     def get(self, entity):
         return self.space.get(entity,dict())
     
     def world(self):
         return self.space
+
+    def notify_all(self, entity, data):
+        for listener in self.listeners:
+            self.listeners[listener][entity] = data
+
+    def add_listener(self, listener_name):
+        self.listeners[listener_name] = dict()
+    
+    def get_listener(self, listener_name):
+        return self.listeners[listener_name]
+    
+    def clear_listener(self, listener_name):
+        self.listeners[listener_name] = dict()
+
 
 # you can test your webservice from the commandline
 # curl -v   -H "Content-Type: application/json" -X PUT http://127.0.0.1:5000/entity/X -d '{"x":1,"y":1}' 
@@ -74,27 +90,43 @@ def flask_post_json():
 @app.route("/")
 def hello():
     '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return None
+    return send_from_directory('static', 'index.html')
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
     '''update the entities via this interface'''
-    return None
+    print("Printing entity: ", entity)
+    value = flask_post_json()
+    print(value)
+    print(request.method)
+    key = request.url.split("/")[-1]
+    print("Printing key: ", key)
+    if request.method == "PUT":
+        for k, v in value.items():
+            print("Key is {} and value is {}".format(k,v))
+            myWorld.update(entity, k, v)
+        print("Returning entity: ", myWorld.get(entity))
+        return flask.jsonify(myWorld.get(entity))
+    elif request.method == "POST":
+        return flask.jsonify(myWorld.world())
+    else:
+        return "BAD_REQUEST", 400
+    return flask.jsonify(myWorld.world())
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    return None
-
+    return flask.jsonify(myWorld.world())
 @app.route("/entity/<entity>")    
 def get_entity(entity):
     '''This is the GET version of the entity interface, return a representation of the entity'''
-    return None
+    return flask.jsonify(myWorld.get(entity))
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
     '''Clear the world out!'''
-    return None
+    myWorld.clear()
+    return myWorld.world()
 
 if __name__ == "__main__":
     app.run()

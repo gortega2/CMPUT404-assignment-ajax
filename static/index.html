@@ -39,6 +39,7 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
             try {
                 if (xhr.status==200) {
                     //XXX: parse some JSON from the request!
+                    
                     //XXX: Pass the data to the callback!
                 }
             } 
@@ -54,6 +55,57 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
 
 
 world = {};
+
+function test() {
+    var request = new Request(location.host);
+    var promise1 = fetch(request);
+    var promise2 = promise1.then(function(response) { 
+        console.log("GOt headers");
+        return response.blob();
+    });
+}
+/*
+function getJSONrequest(uri) {
+    // init request
+    var request = new Request(uri);
+
+    // get request
+    fetch(request).then(
+        req => {
+            if (req.status ===200){
+                return req.json();
+
+            }
+            else {
+                console.log("Error code: " + req.status);
+            }
+        }
+    ).then();
+
+    // return json object
+}
+*/
+
+function fetchJSON(uri){
+    var request = new Request(uri);
+    return fetch(request).then((response) =>{
+        if (response.status === 200) {
+            //console.log(response.json());
+            return response.json();
+            
+        } else {
+            alert("Something went wrong: " + response.status);
+        }
+    });
+}
+
+function parseJsonObject(){
+    var url = "http://" + location.host + "/world"
+    fetchJSON(url).then((json) => {
+        console.log(json);
+        text = json.message;
+    });
+}
 
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
@@ -137,7 +189,10 @@ function getPosition(e) {
 function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
+    console.log("Adding entity")
+    parseJsonObject();
     //XXX: Send a XHTML Request that updates the entity you just  modified!
+
 
 }
 
