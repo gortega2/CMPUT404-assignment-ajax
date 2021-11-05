@@ -59,27 +59,6 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
 
 
 world = {};
-/*
-function getJSONrequest(uri) {
-    // init request
-    var request = new Request(uri);
-
-    // get request
-    fetch(request).then(
-        req => {
-            if (req.status ===200){
-                return req.json();
-
-            }
-            else {
-                console.log("Error code: " + req.status);
-            }
-        }
-    ).then();
-
-    // return json object
-}
-*/
 
 function fetchJSON(uri, m='GET', b=''){
     if (m === "GET"){
