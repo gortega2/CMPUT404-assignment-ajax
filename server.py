@@ -97,8 +97,8 @@ def hello():
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def add_entity(entity):
     v = flask_post_json()
-    print("Printing v: ", v)
-    print("Printing entity: ", entity)
+    #print("Printing v: ", v)
+    #print("Printing entity: ", entity)
     myWorld.set( entity, v )
     e = myWorld.get(entity)    
     # flask has a security restriction in jsonify
@@ -107,7 +107,7 @@ def add_entity(entity):
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    print(myWorld.world())
+    #print(myWorld.world())
     #myWorld.update('P1', 'x', 0)
     return flask.jsonify(myWorld.world())
 @app.route("/entity/<entity>")    
