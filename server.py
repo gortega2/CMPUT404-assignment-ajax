@@ -20,7 +20,9 @@
 # remember to:
 #     pip install flask
 
-
+#Observer pattern reference:
+#https://github.com/uofa-cmput404/cmput404-slides/tree/master/examples/ObserverExampleAJAX
+#Author: Abram Hindle
 import flask
 from flask import Flask, request, render_template, send_from_directory
 import json

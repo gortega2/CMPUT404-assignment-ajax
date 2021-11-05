@@ -87,7 +87,7 @@ function fetchJSON(uri, m='GET', b=''){
     } else if (m ==='POST' || m === "PUT") {
         var request = new Request(uri, {method:m, body:JSON.stringify(b)});
     }
-    console.log(request.method);
+    //console.log(request.method);
     return fetch(request).then((response) => {
         if (response.status === 200) {
             console.log(response);
@@ -100,6 +100,8 @@ function fetchJSON(uri, m='GET', b=''){
 }
 
 //Reference: AJAXObserverExample provided from cmput404 github slides
+//https://github.com/uofa-cmput404/cmput404-slides/tree/master/examples/ObserverExampleAJAX
+//Author: Abram Hindle
 function register(id){
     var url = "http://" + location.host + "/listener/" + id;
     var test = fetchJSON(url, m="POST").then((json) => {
