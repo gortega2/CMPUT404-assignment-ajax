@@ -22,8 +22,9 @@
     "/>
     <script src="json2.js"></script>
   </head> 
-  <body bgcolor="black" height="100%" width="100%"> 
-    <canvas id="c" width="100%" height="100%" style="-webkit-tap-highlight-color: transparent;"></canvas> 
+  <body style="background-image: url('static/background.png');
+  background-size: 100% 100%; background-repeat: no-repeat; background-attachment: fixed;"> 
+    <canvas id="c" width="100%" height="100%" style="background-color: transparent;"></canvas> 
     <script>
 var id = "L"+Math.floor(20000000*Math.random()); //choose random listener id
 console.log("Id is: " + id);
@@ -33,7 +34,7 @@ var host = window.location.host;
 var context = canvas.getContext("2d");
 var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
-
+canvas.style.backgroundColor = "transparent";
 
 function sendJSONXMLHTTPRequest(url, objects, callback) {
     var xhr = new XMLHttpRequest();
@@ -89,7 +90,6 @@ function fetchJSON(uri, m='GET', b=''){
     console.log(request.method);
     return fetch(request).then((response) => {
         if (response.status === 200) {
-            //console.log(response.json());
             console.log(response);
             return response.json();
             
@@ -97,20 +97,6 @@ function fetchJSON(uri, m='GET', b=''){
             alert("Something went wrong: " + response.status);
         }
     });
-}
-
-function parseJsonObject(){
-    var url = "http://" + location.host + "/world"
-    var test = fetchJSON(url).then((json) => {
-        console.log("Printing json stuff:");
-        console.log(json);
-        console.log(json.P1);
-        //console.log(json);
-        //text = json.message;
-        //console.log(text);
-        
-    });
-    console.log(test);
 }
 
 //Reference: AJAXObserverExample provided from cmput404 github slides
@@ -124,6 +110,14 @@ function register(id){
 
 console.log("registering")
 register(id);
+getWorldState();
+
+function getWorldState(){
+    var url = "http://" + location.host + "/world"
+    var test = fetchJSON(url).then((json) => {
+        updateWorldWith(json);
+    });
+}
 
 function checkForUpdate(id){
     var url = "http://" + location.host + "/listener/" + id;
@@ -168,7 +162,8 @@ function drawCircle(context,entity) {
         //moveTo(x,y);
         fillStyle = entity["colour"];
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
+        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);
+        fill();  
         stroke();                                
     }
 }
@@ -185,9 +180,10 @@ function prepEntity(entity) {
 
 function clearFrame() {
     with(context) {
-	moveTo(0,0);
-	fillStyle = "#000";
-	fillRect(0,0,W,H);
+        context.clearRect(0,0, canvas.width, canvas.height)
+	//moveTo(0,0);
+	//fillStyle = "red";
+	//fillRect(0,0,W,H);
     }
 
 }
@@ -239,9 +235,8 @@ function getPosition(e) {
 
 function addEntity(entity, data) {
     world[entity] = data;
-    modifyWorld(entity, data);
     //XXX: Send a XHTML Request that updates the entity you just  modified!
-
+    modifyWorld(entity, data);
 
 }
 
@@ -351,22 +346,22 @@ mouse = (function() {
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'blue', 'radius':4});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'purple', 'radius':4});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':'black',
+                          'radius':2});
 });
 
 
-function update(id) {
-    var int = id
+function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
+    drawNextFrame();
     drawFrame();
 }
 
@@ -375,9 +370,7 @@ setInterval( function() {
     checkForUpdate(id);
 }, 1000/30);
 
-//setInterval( function() {
-//    checkForUpdate(id);
-//}, 3000);
+setInterval( update, 1000/30);
 
 
 

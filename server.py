@@ -105,7 +105,7 @@ def add_entity(entity):
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    print(flask.jsonify(myWorld.world()))
+    print(myWorld.world())
     #myWorld.update('P1', 'x', 0)
     return flask.jsonify(myWorld.world())
 @app.route("/entity/<entity>")    
